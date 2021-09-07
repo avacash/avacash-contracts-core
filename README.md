@@ -1,24 +1,42 @@
-# Tornado Cash Privacy Solution [![Build Status](https://travis-ci.org/tornadocash/tornado-core.svg?branch=master)](https://travis-ci.org/tornadocash/tornado-core)
+# Introducing Privacy-focused Investments in Avalanche
 
-Tornado Cash is a non-custodial Ethereum and ERC20 privacy solution based on zkSNARKs. It improves transaction privacy by breaking the on-chain link between the recipient and destination addresses. It uses a smart contract that accepts ETH deposits that can be withdrawn by a different address. Whenever ETH is withdrawn by the new address, there is no way to link the withdrawal to the deposit, ensuring complete privacy.
+AvaCash.Finance improves privacy by breaking the on-chain link between the recipient and destination addresses of different DeFi assets.
 
-To make a deposit user generates a secret and sends its hash (called a commitment) along with the deposit amount to the Tornado smart contract. The contract accepts the deposit and adds the commitment to its list of deposits.
+It uses smart contracts that accepts different tokens like AVAX, DAI, etc.., Liquidity Pool tokens or other DeFi tokens than are being invested by Avacash.Finance in different DeFi protocols and that can be withdrawn later on a different address.
 
-Later, the user decides to make a withdrawal. To do that, the user should provide a proof that he or she possesses a secret to an unspent commitment from the smart contract’s list of deposits. zkSnark technology allows that to happen without revealing which exact deposit corresponds to this secret. The smart contract will check the proof, and transfer deposited funds to the address specified for withdrawal. An external observer will be unable to determine which deposit this withdrawal came from.
+These contracts act like a type of crypto investment-mixer. Whenever a new address withdraws a token, there is no way to directly link the withdrawal address to the deposit address, which makes the procedure completely private.
 
-You can read more about it in [this medium article](https://medium.com/@tornado.cash/introducing-private-transactions-on-ethereum-now-42ee915babe0)
+In other words, AvaCash.Finance acts as a proxy to ensure that your investment is 100% anonymous with the strong cryptographic technology (zkSnarks proofs) developed by Tornado.Cash.
 
-## Specs
+Better yet, it is 100% non-custodial and 100% trustless, meaning you retain full control over your deposited funds. In other words, nobody (not even developpers) can touch your funds.
 
-- Deposit gas cost: 1088354 (43381 + 50859 \* tree_depth)
-- Withdraw gas cost: 301233
-- Circuit Constraints = 28271 (1869 + 1325 \* tree_depth)
-- Circuit Proof time = 10213ms (1071 + 347 \* tree_depth)
-- Serverless
+## Deposit 🐖
+When making a deposit, a user receives a secret note, which is the only proof of its deposited funds. Keep the note in a safe place!
 
-![image](docs/diagram.png)
+## Wait while Earning 🧘
+In order to increase your anonymity, wait for more users to add their funds in the same anonymity pool ⏰. The more you wait, the more anonymity you will get. 👥😎.
 
-## Whitepaper
+During that time, Avacash.Finance's contracts will invest your your assets, making your waiting time profitable! 💰
+
+Avacash.Finance interacts with several DeFi protocols as well as with its native FlashLoans lending implementation, being a real innovation on Avalanche.
+
+
+## Withdraw 🤑
+Whenever you want to pull out your funds, take your secret note and withdraw them to a new address. For more privacy, Avacash.Finance uses a relayer that will pay the withdrawal gas fees for you. Also, you can use a different IP address and/or a browser like Tor.
+
+You want to learn more? Follow us on our social networks!
+
+- Website: https://avacash.finance
+- Medium: https://avacash.medium.com/
+- Telegram Official Group: https://t.me/AvacashFinance
+- Telegram Announcments Channel: https://t.me/AvacashFinance_Anouncements
+- Twitter: https://twitter.com/AvacashFinance
+- Reddit: https://www.reddit.com/r/AvacashFinance/
+
+___
+___
+
+## Whitepapers
 
 **[TornadoCash_whitepaper_v1.4.pdf](https://tornado.cash/audits/TornadoCash_whitepaper_v1.4.pdf)**
 
