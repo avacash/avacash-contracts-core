@@ -34,14 +34,10 @@ You want to learn more? Follow us on our social networks!
 - Reddit: https://www.reddit.com/r/AvacashFinance/
 
 ___
-___
-
-## Whitepapers
-
-**[TornadoCash_whitepaper_v1.4.pdf](https://tornado.cash/audits/TornadoCash_whitepaper_v1.4.pdf)**
 
 ## Was it audited?
 
+Avacash.Finance is a fork of Tornado.Cash
 Tornado.cash protocols, circuits, and smart contracts were audited by a group of experts from [ABDK Consulting](https://www.abdk.consulting), specializing in zero-knowledge, cryptography, and smart contracts.
 
 During the audit, no critical issues were found and all outstanding issues were fixed. The results can be found here:
@@ -51,6 +47,32 @@ During the audit, no critical issues were found and all outstanding issues were 
 - Zk-SNARK circuits audit https://tornado.cash/audits/TornadoCash_circuit_audit_ABDK.pdf
 
 Underlying circomlib dependency is currently being audited, and the team already published most of the fixes for found issues
+
+The contracts included in the Tornado.Cash audits are:
+- Verifier.sol
+- Tornado.sol
+- MerkleTreeWithHistory.sol
+- ETHTornado.sol
+
+Avacash.Finance's core innovation is in the `AvacashFlashLoanProvider.sol` contract,
+which still needs to be audited.
+
+The `AvacashFinance_AVAX.sol` contract it's a simple fork of the ETHTornado.sol contract, that inherits from `AvacashFlashLoanProvider.sol`
+
+Hence, what is still needed to be audited are:
+- `AvacashFinance_AVAX.sol`
+- `AvacashFlashLoanProvider.sol`
+
+## Was it tested?
+`AvacashFinance_AVAX.sol` and `AvacashFlashLoanProvider.sol`
+has been tested for reentrancy attacks. Check the "Borrower" and "FlashloanExploiter" contracts and tests.
+
+
+## Whitepapers
+
+**[TornadoCash_whitepaper_v1.4.pdf](https://tornado.cash/audits/TornadoCash_whitepaper_v1.4.pdf)**
+
+
 
 ## Requirements
 

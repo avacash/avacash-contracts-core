@@ -1,0 +1,9 @@
+{
+  "addresses": [{
+      "netId": "1337",
+      "name": "development",
+      "flashLoanFeeReceiver": {
+        "address": "0x0000000000000000000000000000000000000000"
+      }
+    }]
+}

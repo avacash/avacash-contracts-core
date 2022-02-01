@@ -28,15 +28,17 @@ const pedersenHash = (data) => circomlib.babyJub.unpackPoint(circomlib.pedersenH
 const toFixedHex = (number, length = 32) =>  '0x' + bigInt(number).toString(16).padStart(length * 2, '0')
 const getRandomRecipient = () => rbigint(20)
 
-function generateDeposit() {
-  let deposit = {
-    secret: rbigint(31),
-    nullifier: rbigint(31),
-  }
-  const preimage = Buffer.concat([deposit.nullifier.leInt2Buff(31), deposit.secret.leInt2Buff(31)])
-  deposit.commitment = pedersenHash(preimage)
-  return deposit
-}
+// const {getNoteString, storeData} = require('../utils/deposit')
+
+  // function generateDeposit() {
+  //   let deposit = {
+  //     secret: rbigint(31),
+  //     nullifier: rbigint(31),
+  //   }
+  //   const preimage = Buffer.concat([deposit.nullifier.leInt2Buff(31), deposit.secret.leInt2Buff(31)])
+  //   deposit.commitment = pedersenHash(preimage)
+  //   return deposit
+  // }
 
 // eslint-disable-next-line no-unused-vars
 function BNArrayToStringArray(array) {
@@ -56,8 +58,9 @@ function snarkVerify(proof) {
 contract('AvacashFinance_AVAX', accounts => {
   let tornado
   const sender = accounts[0]
+  const relayer = accounts[1]
   const operator = accounts[2]
-  const levels = MERKLE_TREE_HEIGHT || 16
+  const levels = 20 //MERKLE_TREE_HEIGHT || 16
   const value = '100000000000000000000' // The last deployed denomination was 100 ether
   let snapshotId
   let prefix = 'test'
@@ -65,13 +68,13 @@ contract('AvacashFinance_AVAX', accounts => {
 //  const fee = bigInt(ETH_AMOUNT).shr(1) || bigInt(1e17)
   const refund = bigInt(0)
   const recipient = getRandomRecipient()
-  const relayer = accounts[1]
   let groth16
   let circuit
   let proving_key
 
   // Flash loan test:
   const Borrower = artifacts.require('./Borrower.sol')
+  const FlashLoanExploiter = artifacts.require('./FlashloanExploiter.sol')
   let borrower
   let fee
   let initialTornadoBalance
@@ -90,8 +93,8 @@ contract('AvacashFinance_AVAX', accounts => {
   before(async () => {
     tree = new MerkleTree(
       levels,
-      null,
-      prefix,
+      null//,
+      //prefix,
     )
     tornado = await Tornado.deployed()
     snapshotId = await takeSnapshot()
@@ -107,51 +110,21 @@ contract('AvacashFinance_AVAX', accounts => {
 
   })
 
-  // describe('#constructor', () => {
-  //   it('should initialize', async () => {
-  //     const etherDenomination = await tornado.denomination()
-  //     etherDenomination.should.be.eq.BN(toBN(value))
-  //   })
-  // })
-  //
-  // describe('#deposit', () => {
-  //   it('when depositing, should emit event', async () => {
-  //     commitment = toFixedHex(42)
-  //     let { logs } = await tornado.deposit(commitment, { value, from: sender })
-  //
-  //     logs[0].event.should.be.equal('Deposit')
-  //     logs[0].args.commitment.should.be.equal(commitment)
-  //     logs[0].args.leafIndex.should.be.eq.BN(0)
-  //
-  //     commitment = toFixedHex(12);
-  //     ({ logs } = await tornado.deposit(commitment, { value, from: accounts[2] }))
-  //
-  //     logs[0].event.should.be.equal('Deposit')
-  //     logs[0].args.commitment.should.be.equal(commitment)
-  //     logs[0].args.leafIndex.should.be.eq.BN(1)
-  //
-  //   })
-  //
-  //   it('should throw if there is a such commitment', async () => {
-  //     const commitment = toFixedHex(42)
-  //     await tornado.deposit(commitment, { value, from: sender }).should.be.fulfilled
-  //     const error = await tornado.deposit(commitment, { value, from: sender }).should.be.rejected
-  //     error.reason.should.be.equal('The commitment has been submitted')
-  //
-  //
-  //   })
-  // })
-  //
   let testNumber = 1;
+  const commitment0 = toFixedHex(41)
+  const commitment1 = toFixedHex(40)
+
   describe('#FlashLoan Tests:', () => {
 
     beforeEach(async () => {
       console.log("Test Number #", testNumber);
-      commitment = toFixedHex(41)
-      await tornado.deposit(commitment, { value, from: sender })
+      // commitment = toFixedHex(41)
+      await tornado.deposit(commitment0, { value: value, from: sender })
+      // await tree.insert(commitment)
 
-      commitment = toFixedHex(40)
-      await tornado.deposit(commitment, { value, from: sender })
+      // commitment = toFixedHex(40)
+      await tornado.deposit(commitment1, { value: value, from: sender })
+      // await tree.insert(commitment)
 
       borrower = await Borrower.deployed()
       await borrower.payableFunction({value: 10000000000000000000, from: accounts[4]});
@@ -165,7 +138,6 @@ contract('AvacashFinance_AVAX', accounts => {
     //  console.log("initialBorrowerBalance: " , initialBorrowerBalance.toString())
       testNumber ++;
     })
-
 
 
     it('Correct flashloan Borrower', async () => {
@@ -306,7 +278,7 @@ contract('AvacashFinance_AVAX', accounts => {
       let error = await borrower.flashLoan(_flashLoanProvider,_recipient, _amount, _data, {from: sender }).should.be.rejected
 
       // console.log("thief: error:", error.reason.should.be)
-      error.reason.should.be.equal("AvacashFlashLoanProvider: LOCKED");
+      error.reason.should.be.equal("ReentrancyGuard: reentrant call");
 
       // Checking tornado Balance
       finalTornadoBalanceBN = BigNumber(await web3.eth.getBalance(tornado.address));
@@ -482,6 +454,7 @@ contract('AvacashFinance_AVAX', accounts => {
       assert.equal(finalFeeReceiverBalanceAdjustedBN.isGreaterThanOrEqualTo(minimumExpectedFeeReceiverBalanceAdjustedBN),true, 'Fee receiver should have received the fee');
 
     })
+
 
   })
 

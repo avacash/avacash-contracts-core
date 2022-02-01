@@ -18,7 +18,7 @@
 
 pragma solidity 0.5.17;
 
-import './libraries/SafeMathUni.sol';
+import '../libraries/SafeMathUni.sol';
 
 
 interface FlashLoanProvider {

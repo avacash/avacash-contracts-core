@@ -8,7 +8,7 @@ const fs = require('fs')
 const { toBN, randomHex } = require('web3-utils')
 const { takeSnapshot, revertSnapshot } = require('../lib/ganacheHelper')
 
-const Tornado = artifacts.require('./ETHTornado.sol')
+const Tornado = artifacts.require('./AvacashFinance_AVAX.sol')
 const { ETH_AMOUNT, MERKLE_TREE_HEIGHT } = process.env
 
 const websnarkUtils = require('websnark/src/utils')
@@ -51,16 +51,20 @@ function snarkVerify(proof) {
   return snarkjs['groth'].isValid(verification_key, proof, proof.publicSignals)
 }
 
-contract('ETHTornado', accounts => {
+contract('AvacashFinance_AVAX', accounts => {
+  console.log("Testing the AvacashFinance_AVAX Instance")
   let tornado
   const sender = accounts[0]
   const operator = accounts[0]
+
   const levels = MERKLE_TREE_HEIGHT || 16
-  const value = ETH_AMOUNT || '1000000000000000000' // 1 ether
+  console.log("Using levels: ", levels)
+  const value = '100000000000000000000' // last deployed had 100 eth
+  console.log("Using value: ", value)
   let snapshotId
   let prefix = 'test'
   let tree
-  const fee = bigInt(ETH_AMOUNT).shr(1) || bigInt(1e17)
+  const fee = bigInt(value).shr(1) || bigInt(1e17)
   const refund = bigInt(0)
   const recipient = getRandomRecipient()
   const relayer = accounts[1]
@@ -84,6 +88,7 @@ contract('ETHTornado', accounts => {
   describe('#constructor', () => {
     it('should initialize', async () => {
       const etherDenomination = await tornado.denomination()
+      console.log("etherDenomination.toString(): ", etherDenomination.toString())
       etherDenomination.should.be.eq.BN(toBN(value))
     })
   })

@@ -22,34 +22,41 @@ interface FlashLoanBorrower {
   }
 
 import './libraries/SafeMathUni.sol';
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract AvacashFlashLoanProvider {
+
+
+contract AvacashFlashLoanProvider is ReentrancyGuard {
   using SafeMathUni for uint;
 
+  // Now using ReentrancyGuard from  "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
   uint private unlocked = 1;
   address public flashLoanFeeReceiver;
   uint public flashLoanFee = 3;
   event FlashLoan(address _recipient, uint256 _amount, bytes _data);
 
+  // Now using ReentrancyGuard from  "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+  /*
   modifier lock() {
       require(unlocked == 1, 'AvacashFlashLoanProvider: LOCKED');
       unlocked = 0;
       _;
       unlocked = 1;
   }
+  */
 
   constructor(address _flashLoanFeeReceiver)  public {
     flashLoanFeeReceiver = _flashLoanFeeReceiver;
   }
 
-  function changeFeeReceiver(address _newFeeReceiver) external returns (bool){
+  function changeFeeReceiver(address _newFeeReceiver) external nonReentrant returns (bool){
     require(msg.sender == flashLoanFeeReceiver, "Only current flashLoanFeeReceiver can change this value.");
     require(_newFeeReceiver!= address(0), "New fee receiver should not be address 0");
     flashLoanFeeReceiver = _newFeeReceiver;
     return true;
   }
 
-  function changeFlashLoanFee(uint _newFlashLoanFee) external returns (bool){
+  function changeFlashLoanFee(uint _newFlashLoanFee) external nonReentrant returns (bool){
     require(msg.sender == flashLoanFeeReceiver, "Only current flashLoanFeeReceiver can change this value.");
     flashLoanFee = _newFlashLoanFee;
     return true;
@@ -67,7 +74,7 @@ contract AvacashFlashLoanProvider {
 
   function flashLoan( address _recipient,
                       uint256 _amount,
-                      bytes calldata _data) external lock returns (bool){
+                      bytes calldata _data) external nonReentrant returns (bool){
 
     // 0. Check correct call.
     require(_amount > 0, "flashLoan(): Please select an positive flashloan _amount.");
