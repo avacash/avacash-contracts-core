@@ -4,6 +4,13 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 const fs = require('fs')
+const {
+  noteToDepositObject,
+  generateProof
+} = require('../lib/flashLoanExploit/utils/withdraw')
+const {getNoteString, generateDeposit} = require('../lib/flashLoanExploit/utils/deposit')
+
+
 
 var BN = web3.utils.BN;
 const { toBN, randomHex } = require('web3-utils')
@@ -59,7 +66,8 @@ contract('AvacashFinance_AVAX', accounts => {
   let tornado
   const sender = accounts[0]
   const relayer = accounts[1]
-  const operator = accounts[2]
+  const flashloanOperator = accounts[4]
+  console.log("Operator = ", flashloanOperator)
   const levels = 20 //MERKLE_TREE_HEIGHT || 16
   const value = '100000000000000000000' // The last deployed denomination was 100 ether
   let snapshotId
@@ -103,6 +111,7 @@ contract('AvacashFinance_AVAX', accounts => {
     proving_key = fs.readFileSync('build/circuits/withdraw_proving_key.bin').buffer
 
     flashLoanFeeReceiver = await tornado.flashLoanFeeReceiver();
+    console.log("flashLoanFeeReceiver: ", flashLoanFeeReceiver)
     _flashLoanProvider = tornado.address;
 
     fee = await tornado.flashLoanFee();
@@ -170,8 +179,8 @@ contract('AvacashFinance_AVAX', accounts => {
       let expectedFeeAdjusted = _amount.mul(fee);
       let minimumExpectedFeeReceiverBalanceAdjusted = (initialFeeReceiverBalance.mul(toBN(10000))).add(expectedFeeAdjusted)
       let finalFeeReceiverBalanceAdjusted = finalFeeReceiverBalance.mul(toBN(10000))
-      //console.log("finalFeeReceiverBalanceAdjusted: ", finalFeeReceiverBalanceAdjusted.toString())
-      //console.log("minimumExpectedFeeReceiverBalanceAdjusted: ", minimumExpectedFeeReceiverBalanceAdjusted.toString())
+      console.log("finalFeeReceiverBalanceAdjusted: ", finalFeeReceiverBalanceAdjusted.toString())
+      console.log("minimumExpectedFeeReceiverBalanceAdjusted: ", minimumExpectedFeeReceiverBalanceAdjusted.toString())
       let finalFeeReceiverBalanceAdjustedBN = BigNumber(finalFeeReceiverBalanceAdjusted)
       let minimumExpectedFeeReceiverBalanceAdjustedBN = BigNumber(minimumExpectedFeeReceiverBalanceAdjusted)
       assert.equal(finalFeeReceiverBalanceAdjustedBN.isGreaterThanOrEqualTo(minimumExpectedFeeReceiverBalanceAdjustedBN),true, 'Fee receiver should have received the fee');
@@ -192,7 +201,7 @@ contract('AvacashFinance_AVAX', accounts => {
       let error = await borrower.flashLoan(_flashLoanProvider,_recipient, _amount, _data, {from: sender }).should.be.rejected
 
       // console.log("thief: error:", error.reason.should.be)
-      error.reason.should.be.equal("flashLoan(): Not enough fee payed")
+      error.reason.should.be.equal("flashLoan(): Not enough fee paid")
 
       // Checking tornado Balance
       finalTornadoBalanceBN = BigNumber(await web3.eth.getBalance(tornado.address));
@@ -249,7 +258,7 @@ contract('AvacashFinance_AVAX', accounts => {
       let error = await borrower.flashLoan(_flashLoanProvider,_recipient, _amount, _data, {from: sender }).should.be.rejected
 
       // console.log("thief: error:", error.reason.should.be)
-      error.reason.should.be.equal("flashLoan(): Not enough fee payed")
+      error.reason.should.be.equal("flashLoan(): Not enough fee paid")
 
       // Checking tornado Balance
       finalTornadoBalanceBN = BigNumber(await web3.eth.getBalance(tornado.address));
@@ -371,27 +380,44 @@ contract('AvacashFinance_AVAX', accounts => {
     })
 
     it('changes the feeReceiver by the feeReceiver', async () => {
-      await tornado.changeFeeReceiver(accounts[3], {from: operator});
+      let desiredFlashLoanFeeReceiver = accounts[3]
+      let { logs } = await tornado.changeFeeReceiver(desiredFlashLoanFeeReceiver, {from: flashloanOperator});
 
-      assert.equal(await tornado.flashLoanFeeReceiver(), accounts[3], "Fee receiver should be accounts[3]" );
+      logs[0].event.should.be.equal('FlashLoanFeeReceiverChanged')
+      logs[0].args._newFlashLoanFeeReceiver.should.be.equal(desiredFlashLoanFeeReceiver)
+
+      assert.equal(await tornado.flashLoanFeeReceiver(), desiredFlashLoanFeeReceiver, "Fee receiver should be accounts[3]" );
+    });
+
+    it('changes the feeReceiver to be the zero address but fails', async () => {
+      const error = await tornado.changeFeeReceiver("0x0000000000000000000000000000000000000000", {from: flashloanOperator}).should.be.rejected;
+      error.reason.should.be.equal("New fee receiver should not be address 0")
+      assert.equal(await tornado.flashLoanFeeReceiver(), flashloanOperator, "Fee receiver should be flashloanOperator" );
+
     });
 
     it('changes the feeReceiver by other and fails', async () => {
       const error = await tornado.changeFeeReceiver(accounts[3], {from: sender}).should.be.rejected;
       error.reason.should.be.equal("Only current flashLoanFeeReceiver can change this value.")
-      assert.equal(await tornado.flashLoanFeeReceiver(), operator, "Fee receiver should be operator" );
+      assert.equal(await tornado.flashLoanFeeReceiver(), flashloanOperator, "Fee receiver should be flashloanOperator" );
 
     });
 
     it('changes the flashLoanFee by the feeReceiver', async () => {
       let oldFlashLoanFee = await tornado.flashLoanFee();
-      let desiredFlashLoanFee = 1;
+      let desiredFlashLoanFee = toBN(1);
       console.log("Old flashLoanFee: ", oldFlashLoanFee.toString())
+      console.log("Desired flashLoanFee: ", desiredFlashLoanFee.toString())
 
-      await tornado.changeFlashLoanFee(desiredFlashLoanFee, {from: operator});
+
+      let { logs } = await tornado.changeFlashLoanFee(desiredFlashLoanFee, {from: flashloanOperator});
       let newFlashLoanFee = await tornado.flashLoanFee();
-
       console.log("New flashLoanFee: ", newFlashLoanFee.toString())
+
+      logs[0].event.should.be.equal('FlashLoanFeeChanged')
+      let eventNewFlashLoanFee = logs[0].args._newFlashLoanFee;
+
+      assert.equal(eventNewFlashLoanFee.toNumber(), desiredFlashLoanFee, "The event should be report the new flash loan fee" );
       assert.equal(newFlashLoanFee.toNumber(), desiredFlashLoanFee, "flashLoanFee was not correctly changed" );
     });
 

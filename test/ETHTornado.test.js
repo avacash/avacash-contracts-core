@@ -489,20 +489,18 @@ contract('AvacashFinance_AVAX', accounts => {
   })
 
   describe('#changeOperator', () => {
-    it('should work', async () => {
+    it('should NOT work', async () => {
       let operator = await tornado.operator()
-      operator.should.be.equal(sender)
+      operator.should.be.equal("0x0000000000000000000000000000000000000000")
 
       const newOperator = accounts[7]
-      await tornado.changeOperator(newOperator).should.be.fulfilled
-
-      operator = await tornado.operator()
-      operator.should.be.equal(newOperator)
+      const error = await tornado.changeOperator(newOperator).should.be.rejected
+      error.reason.should.be.equal('Only operator can call this function.')
     })
 
     it('cannot change from different address', async () => {
       let operator = await tornado.operator()
-      operator.should.be.equal(sender)
+      operator.should.be.equal("0x0000000000000000000000000000000000000000")
 
       const newOperator = accounts[7]
       const error = await tornado.changeOperator(newOperator, { from:  accounts[7] }).should.be.rejected
@@ -513,19 +511,21 @@ contract('AvacashFinance_AVAX', accounts => {
 
   describe('#updateVerifier', () => {
     it('should work', async () => {
-      let operator = await tornado.operator()
-      operator.should.be.equal(sender)
+      // let operator = await tornado.operator()
+      // operator.should.be.equal(sender)
 
       const newVerifier = accounts[7]
-      await tornado.updateVerifier(newVerifier).should.be.fulfilled
+      // await tornado.updateVerifier(newVerifier).should.be.fulfilled
+      const error = await tornado.updateVerifier(newVerifier).should.be.rejected
+      error.reason.should.be.equal('Only operator can call this function.')
 
-      const verifier = await tornado.verifier()
-      verifier.should.be.equal(newVerifier)
+      // const verifier = await tornado.verifier()
+      // verifier.should.be.equal(newVerifier)
     })
 
     it('cannot change from different address', async () => {
       let operator = await tornado.operator()
-      operator.should.be.equal(sender)
+      operator.should.be.equal("0x0000000000000000000000000000000000000000")
 
       const newVerifier = accounts[7]
       const error = await tornado.updateVerifier(newVerifier, { from:  accounts[7] }).should.be.rejected
