@@ -30,22 +30,14 @@ contract AvacashFlashLoanProvider is ReentrancyGuard {
   using SafeMathUni for uint;
 
   // Now using ReentrancyGuard from  "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
-  uint private unlocked = 1;
   address public flashLoanFeeReceiver;
   uint public flashLoanFee = 3;
   event FlashLoan(address _recipient, uint256 _amount, bytes _data);
-
-  // Now using ReentrancyGuard from  "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
-  /*
-  modifier lock() {
-      require(unlocked == 1, 'AvacashFlashLoanProvider: LOCKED');
-      unlocked = 0;
-      _;
-      unlocked = 1;
-  }
-  */
+  event FlashLoanFeeChanged(uint _newFlashLoanFee);
+  event FlashLoanFeeReceiverChanged(address _newFlashLoanFeeReceiver);
 
   constructor(address _flashLoanFeeReceiver)  public {
+    require(_flashLoanFeeReceiver!=address(0), "feeReceiver should not be the Zero Address");
     flashLoanFeeReceiver = _flashLoanFeeReceiver;
   }
 
@@ -53,12 +45,14 @@ contract AvacashFlashLoanProvider is ReentrancyGuard {
     require(msg.sender == flashLoanFeeReceiver, "Only current flashLoanFeeReceiver can change this value.");
     require(_newFeeReceiver!= address(0), "New fee receiver should not be address 0");
     flashLoanFeeReceiver = _newFeeReceiver;
+    emit FlashLoanFeeReceiverChanged(flashLoanFeeReceiver);
     return true;
   }
 
   function changeFlashLoanFee(uint _newFlashLoanFee) external nonReentrant returns (bool){
     require(msg.sender == flashLoanFeeReceiver, "Only current flashLoanFeeReceiver can change this value.");
     flashLoanFee = _newFlashLoanFee;
+    emit FlashLoanFeeChanged(flashLoanFee);
     return true;
   }
 
@@ -89,19 +83,19 @@ contract AvacashFlashLoanProvider is ReentrancyGuard {
     // 2. We lend the money:
     (bool success1 ) = _borrower.avacashFlashLoanCall.value(_amount)(_data);
     // (bool success1, ) = _recipient.call.value(_amount)(abi.encodeWithSignature("avacashFlashLoanCall(bytes32)", _data));
-    require(success1, "flashLoan(): flashloan to _recipient did not go thru.");
+    require(success1, "flashLoan(): flashloan to _recipient did not go through.");
 
     // 3. Calculate _feeAdjusted
     // fees are in deci-bps, i.e. 1/10th bps https://www.investopedia.com/terms/b/basispoint.asp
     // if flashLoanFee = 3, means 0.003%
     uint256 _feeAdjusted = _amount.mul(flashLoanFee);
 
-    require(address(this).balance.mul(100000) >= _initialBalance.mul(100000).add(_feeAdjusted) , "flashLoan(): Not enough fee payed");
+    require(address(this).balance.mul(100000) >= _initialBalance.mul(100000).add(_feeAdjusted) , "flashLoan(): Not enough fee paid");
 
     // 4. Send fee to feeReceiver.
     if (_feeAdjusted > 0 ) {
       (bool success2, ) = flashLoanFeeReceiver.call.value(address(this).balance.sub(_initialBalance))("");
-      require(success2, "flashLoan(): payment to feeReceiver  did not go thru");
+      require(success2, "flashLoan(): payment to feeReceiver  did not go through");
     }
 
     //3. We check the final balance.
