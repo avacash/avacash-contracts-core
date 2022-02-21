@@ -78,7 +78,7 @@ The contracts included in the Tornado.Cash audits are:
 - ETHTornado.sol
 
 Avacash.Finance's core innovation is in the `AvacashFlashLoanProvider.sol` contract,
-Which has been audited by Audit.sc.
+this contract is currently being audited by Audit.sc and Immunebytes.com
 Check the audit folder of this repository
 
 
