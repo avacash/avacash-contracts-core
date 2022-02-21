@@ -13,6 +13,29 @@ Better yet, it is 100% non-custodial and 100% trustless, meaning you retain full
 ## Deposit 🐖
 When making a deposit, a user receives a secret note, which is the only proof of its deposited funds. Keep the note in a safe place!
 
+## Was it audited?
+
+Avacash.Finance is a fork of Tornado.Cash
+Tornado.cash protocols, circuits, and smart contracts were audited by a group of experts from [ABDK Consulting](https://www.abdk.consulting), specializing in zero-knowledge, cryptography, and smart contracts.
+
+During the audit, no critical issues were found and all outstanding issues were fixed. The results can be found here:
+
+- Cryptographic review https://tornado.cash/audits/TornadoCash_cryptographic_review_ABDK.pdf
+- Smart contract audit https://tornado.cash/audits/TornadoCash_contract_audit_ABDK.pdf
+- Zk-SNARK circuits audit https://tornado.cash/audits/TornadoCash_circuit_audit_ABDK.pdf
+
+Underlying circomlib dependency is currently being audited, and the team already published most of the fixes for found issues
+
+The contracts included in the Tornado.Cash audits are:
+- Verifier.sol
+- Tornado.sol
+- MerkleTreeWithHistory.sol
+- ETHTornado.sol
+
+Avacash.Finance's core innovation is in the `AvacashFlashLoanProvider.sol` contract,
+which still needs to be audited.
+
+The `AvacashFinance_AVAX.sol` contract it's a simple fork of the ETHTornado.sol contract, that inherits from `AvacashFlashLoanProvider.sol`
 ## Wait while Earning 🧘
 In order to increase your anonymity, wait for more users to add their funds in the same anonymity pool ⏰. The more you wait, the more anonymity you will get. 👥😎.
 
@@ -58,10 +81,6 @@ Avacash.Finance's core innovation is in the `AvacashFlashLoanProvider.sol` contr
 which still needs to be audited.
 
 The `AvacashFinance_AVAX.sol` contract it's a simple fork of the ETHTornado.sol contract, that inherits from `AvacashFlashLoanProvider.sol`
-
-Hence, what is still needed to be audited are:
-- `AvacashFinance_AVAX.sol`
-- `AvacashFlashLoanProvider.sol`
 
 ## Was it tested?
 `AvacashFinance_AVAX.sol` and `AvacashFlashLoanProvider.sol`
