@@ -20,20 +20,26 @@ module.exports = function(deployer, network, accounts) {
 
   return deployer.then(async () => {
 
-    const { MERKLE_TREE_HEIGHT, ETH_AMOUNT } = process.env
+    const { MERKLE_TREE_HEIGHT } = process.env
     const verifier = await Verifier.deployed()
-    const hasherInstance = await hasherContract.deployed()
-    await AvacashFinance_AVAX.link(hasherContract, hasherInstance.address)
+    const hasher = await hasherContract.deployed()
+    //await AvacashFinance_AVAX.link(hasherContract, hasherInstance.address)
     amounts = process.env.TOKEN_AMOUNT_ARRAY.split(",")
 
     const instances_list = [];
     //for(i=0; i<amounts.length; i++) {
       console.log(amounts[i].substring(0,amounts[i].length-18), " ETH")
+      console.log("input:",
+      " : ", verifier.address,
+      " : ", hasher.address,
+      " : ", amounts[i],
+      " : ", MERKLE_TREE_HEIGHT,
+      " : ", flash_loan_fee_receiver)
       const tornado = await deployer.deploy(AvacashFinance_AVAX,
-                      verifier.address, //   IVerifier _verifier,
-                      amounts[i], //   uint256 _denomination,
-                      MERKLE_TREE_HEIGHT, //   uint32 _merkleTreeHeight,
-                      zero_address,//   address _operator,
+                      verifier.address,
+                      hasher.address,
+                      amounts[i],
+                      MERKLE_TREE_HEIGHT,
                       flash_loan_fee_receiver)//   address _flashLoanFeeReceiver
       console.log('AvacashFinance_AVAX\'s address ', tornado.address)
       console.log('AvacashFinance_AVAX\'s txHash ', tornado.transactionHash)

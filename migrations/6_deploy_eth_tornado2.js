@@ -6,10 +6,12 @@ const Verifier = artifacts.require('Verifier')
 const hasherContract = artifacts.require('Hasher')
 const fs = require('fs')
 const zero_address = "0x0000000000000000000000000000000000000000";
-const {addJsonInNetwork, getDeploymentFromNetworkName} = require('../config/lib/utils')
+const {addJsonInNetwork} = require('../config/lib/utils')
 
 addresses_path= '/workspace/config/addresses/addresses.json'
 const { addresses } = require(addresses_path)
+
+
 
 module.exports = function(deployer, network, accounts) {
   //const flash_loan_fee_receiver = accounts[2]?accounts[2]:process.env.FLASH_LOAN_FEE_RECEIVER;
@@ -18,22 +20,26 @@ module.exports = function(deployer, network, accounts) {
 
   return deployer.then(async () => {
 
-    const {deployment, index} = getDeploymentFromNetworkName(network)
-
-    const { MERKLE_TREE_HEIGHT, ETH_AMOUNT } = process.env
+    const { MERKLE_TREE_HEIGHT } = process.env
     const verifier = await Verifier.deployed()
-    const hasherInstance = await hasherContract.deployed()
-    await AvacashFinance_AVAX.link(hasherContract, hasherInstance.address)
+    const hasher = await hasherContract.deployed()
+    //await AvacashFinance_AVAX.link(hasherContract, hasherInstance.address)
     amounts = process.env.TOKEN_AMOUNT_ARRAY.split(",")
 
-    const instances_list = deployment.instances;
+    const instances_list = [];
     //for(i=0; i<amounts.length; i++) {
       console.log(amounts[i].substring(0,amounts[i].length-18), " ETH")
+      console.log("input:",
+      " : ", verifier.address,
+      " : ", hasher.address,
+      " : ", amounts[i],
+      " : ", MERKLE_TREE_HEIGHT,
+      " : ", flash_loan_fee_receiver)
       const tornado = await deployer.deploy(AvacashFinance_AVAX,
-                      verifier.address, //   IVerifier _verifier,
-                      amounts[i], //   uint256 _denomination,
-                      MERKLE_TREE_HEIGHT, //   uint32 _merkleTreeHeight,
-                      zero_address,//   address _operator,
+                      verifier.address,
+                      hasher.address,
+                      amounts[i],
+                      MERKLE_TREE_HEIGHT,
                       flash_loan_fee_receiver)//   address _flashLoanFeeReceiver
       console.log('AvacashFinance_AVAX\'s address ', tornado.address)
       console.log('AvacashFinance_AVAX\'s txHash ', tornado.transactionHash)

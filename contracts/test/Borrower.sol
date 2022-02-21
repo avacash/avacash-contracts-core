@@ -16,7 +16,7 @@
 
 */
 
-pragma solidity 0.5.17;
+pragma solidity ^0.7.0;
 
 import '../libraries/SafeMathUni.sol';
 
@@ -57,7 +57,7 @@ contract Borrower {
       return true;
     }
     else if (keccak256(noFees) == keccak256(_data)) {
-      (bool success) = _flashLoanProvider.payBack.value(msg.value)();
+      (bool success) = _flashLoanProvider.payBack{value: msg.value}();
       require (success, "Error giving back money");
       return true;
     }
@@ -80,7 +80,7 @@ contract Borrower {
     }
     //We just send back the money + fee
     require (address(this).balance >= msg.value + _fee, "Not enough money to give back");
-    (bool success) = _flashLoanProvider.payBack.value(msg.value + _fee)();
+    (bool success) = _flashLoanProvider.payBack{value: msg.value + _fee}();
     require (success, "Error giving back money");
     return true;
   }

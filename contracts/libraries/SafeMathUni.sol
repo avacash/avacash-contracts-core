@@ -2,7 +2,7 @@
 //https://ethereumdev.io/using-safe-math-library-to-prevent-from-overflows/
 // Using GPL-3.0 License
 
-pragma solidity 0.5.17;
+pragma solidity ^0.7.0;
 
 // a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
 
